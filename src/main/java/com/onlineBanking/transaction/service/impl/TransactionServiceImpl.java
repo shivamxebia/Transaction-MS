@@ -16,45 +16,46 @@ import com.onlineBanking.transaction.service.TransactionService;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
-	
-    @Autowired
-    private RestTemplate restTemplate;
-	
+
+	@Autowired
+	private RestTemplate restTemplate;
+
 	@Autowired
 	private TransactionRepository transactionRepository;
 
 	@Override
-	public String createTransaction(Long userId, Long amount, String transactionType) throws TransactionApplicationException {
+	public String createTransaction(Long userId, Long amount, String transactionType)
+			throws TransactionApplicationException {
 		// TODO Auto-generated method stub
-		
+
 		Transaction transaction = new Transaction();
 		transaction.setUserId(userId);
 		transaction.setAmount(amount);
 		transaction.setTransactionType(transactionType);
-		
-		
-		String updateAccountBalanceUrl = "http://localhost:8081/api/v1/update-balance"; 
+
+		String updateAccountBalanceUrl = "http://localhost:8081/api/v1/update-balance";
 //		System.out.println("URL CARD : "+createCardUrl);
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        
-     // Create request payload
-        CreateTransactionRequestDto requestPayload = new CreateTransactionRequestDto();
-        requestPayload.setUserId(userId);
-        requestPayload.setAmount(amount);
-        requestPayload.setTransactionType(transactionType);
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
 
-        HttpEntity<CreateTransactionRequestDto> requestEntity = new HttpEntity<>(requestPayload, headers);
+		// Create request payload
+		CreateTransactionRequestDto requestPayload = new CreateTransactionRequestDto();
+		requestPayload.setUserId(userId);
+		requestPayload.setAmount(amount);
+		requestPayload.setTransactionType(transactionType);
 
-        // Send POST request to the account service to update the account balance
-        ResponseEntity<String> responseEntity =restTemplate.exchange(updateAccountBalanceUrl, HttpMethod.PATCH, requestEntity, String.class);
-		
-		if(responseEntity.getStatusCode()!= HttpStatus.OK) {
-			throw new TransactionApplicationException(HttpStatus.BAD_REQUEST,"Account Balance Updation Failed !");
+		HttpEntity<CreateTransactionRequestDto> requestEntity = new HttpEntity<>(requestPayload, headers);
+
+		// Send POST request to the account service to update the account balance
+		ResponseEntity<String> responseEntity = restTemplate.exchange(updateAccountBalanceUrl, HttpMethod.POST,
+				requestEntity, String.class);
+
+		if (responseEntity.getStatusCode() != HttpStatus.OK) {
+			throw new TransactionApplicationException(HttpStatus.BAD_REQUEST, "Account Balance Updation Failed !");
 		}
 
 		transactionRepository.save(transaction);
-		
+
 		return "Transaction Successful !!";
 	}
 
